@@ -292,88 +292,44 @@ function initListeners() {
   });
 
   //filter sublocations on any change 
-  $('#stationSelect').on('select2:select', function (e) {
+  $('#stationSelect').on('change', function (e) {
 
     var obj = $("#stationSelect").select2("data");
     var siteIDlist =  obj.map(site => site.value);
 
-    console.log('station select selection:',  siteIDlist)
+    //console.log('station select selection:',  siteIDlist);
+    //console.log('filtering sublocations');
 
     filterSublocations(siteIDlist);
   });
 
-  //filter sublocations on any change 
-  $('#sublocationSelect').on('select2:select', function (e) {
 
-    console.log('filtering sublocations')
+  //filter sublocations on any change 
+  $('#sublocationSelect').on('change', function (e) {
 
     var obj = $("#sublocationSelect").select2("data");
     var sublocationList =  obj.map(subloc => subloc.text);
 
-    console.log('sublocation select selection:',  sublocationList);
+    //console.log('sublocation select selection:',  sublocationList);
+    //console.log('filtering parameterList');
 
-    $.each(sublocationList, function (idx,subLocation) { 
+    filterParameterList(sublocationList);
 
-      var subLoc = subLocation.split(' | ');
-      var siteID = subLoc[0];
-      var siteName = subLoc[1];
+  });
 
-      //console.log('sublocation', siteID, siteName)
+  $('#parameterSelect').on('change', function (e) {
 
-      var pcodeList = [];
+    //clear graph
+    $('#graphContainer').html('');
 
-      ngwosSitesLayer.eachLayer(function(geoJSON){
-        geoJSON.eachLayer(function(layer) {
-  
-          //console.log('feature loop:', siteID, siteName, layer.feature.properties['Station Name'])
-  
-          if (layer.feature.properties['Station Name'] === siteName && layer.feature.properties['Site ID'] === siteID) {
-            //console.log('FOUND MATCH',layer.feature.properties);
+    // var obj = $("#sublocationSelect").select2("data");
+    // var sublocationList =  obj.map(subloc => subloc.text);
 
-            //get list of parameters available at this sublocation
-            for (var property in layer.feature.properties) {
-              if (property.indexOf(':') !== -1) {
-                var pcode = property.split(':')[0];
-                //console.log('PCODE', pcode);
-                if (pcodeList.indexOf(pcode) === -1) pcodeList.push(pcode);
+    // console.log('sublocation select selection:',  sublocationList);
+    // console.log('filtering parameterList');
 
-              }
-            }
-          }
-  
-        });
-      });
+    // filterParameterList(sublocationList);
 
-      console.log('pcode list:', pcodeList);
-
-
-      $("#parameterSelect option").each(function() {
-
-        $(this).prop('disabled', false);
-    
-        //hide options that dont match
-        var optionVal = $(this).val();
-    
-        //if this sublocation doesnt match a selection station, hide it (with disable + CSS)
-        if (pcodeList.indexOf(optionVal) === -1) {
-    
-          //console.log('hiding sublocation:' , optionVal);
-          $(this).prop('disabled', 'disabled');
-    
-          $('#parameterSelect').trigger('change');
-        }
-    
-        else {
-          //console.log('keeping this sublocation:', optionVal);
-        }
-      });
-
-
-    });
-
-
-
-    //filterSublocations(siteIDlist);
   });
 
   ngwosSitesLayer.on('click', function (e) {
@@ -396,9 +352,74 @@ function initListeners() {
   /*  END EVENT HANDLERS */
 }
 
+function filterParameterList(sublocationList) {
+
+  //if the list is empty enable all options
+  if (sublocationList.length === 0) {
+    $("#parameterSelect option").each(function() {
+      $(this).prop('disabled', false);
+    });
+  }
+
+  $.each(sublocationList, function (idx,subLocation) { 
+
+    var subLoc = subLocation.split(' | ');
+    var siteID = subLoc[0];
+    var siteName = subLoc[1];
+    var pcodeList = [];
+
+    //get available parameters from individual site properties
+    ngwosSitesLayer.eachLayer(function(geoJSON){
+      geoJSON.eachLayer(function(layer) {
+
+        //console.log('feature loop:', siteID, siteName, layer.feature.properties['Station Name'])
+
+        if (layer.feature.properties['Station Name'] === siteName && layer.feature.properties['Site ID'] === siteID) {
+          //console.log('FOUND MATCH',layer.feature.properties);
+
+          //get list of parameters available at this sublocation
+          for (var property in layer.feature.properties) {
+            if (property.indexOf(':') !== -1) {
+              var pcode = property.split(':')[0];
+              //console.log('PCODE', pcode);
+              if (pcodeList.indexOf(pcode) === -1) pcodeList.push(pcode);
+
+            }
+          }
+        }
+
+      });
+    });
+
+    console.log('pcode list:', pcodeList);
+
+
+    $("#parameterSelect option").each(function() {
+
+      $(this).prop('disabled', false);
+  
+      //hide options that dont match
+      var optionVal = $(this).val();
+  
+      //if this sublocation doesnt match a selection station, hide it (with disable + CSS)
+      if (pcodeList.indexOf(optionVal) === -1) {
+  
+        //console.log('hiding sublocation:' , optionVal);
+        $(this).prop('disabled', 'disabled');
+  
+        $('#parameterSelect').trigger('change');
+      }
+  
+      else {
+        //console.log('keeping this sublocation:', optionVal);
+      }
+    });
+  });
+}
+
 function filterSublocations(siteIDlist) {
 
-  console.log('filtering sublocations with this list:', siteIDlist);
+  //console.log('filtering sublocations with this list:', siteIDlist);
 
   //loop over all sublocations
   $("#sublocationSelect option").each(function() {
@@ -406,7 +427,9 @@ function filterSublocations(siteIDlist) {
     $(this).prop('disabled', false);
 
     //hide options that dont match
-    var optionVal = $(this).val();
+    var optionVal = $(this).val().split(' | ')[0];
+
+    //console.log(optionVal, siteIDlist)
 
     //if this sublocation doesnt match a selection station, hide it (with disable + CSS)
     if (siteIDlist.indexOf(optionVal) === -1) {
@@ -654,7 +677,7 @@ function getData() {
 
           if (found) {
 
-            console.log('FOUND A MATCH', method_description, value.value.length )
+            //console.log('FOUND A MATCH', method_description, value.value.length )
 
             //check to make sure there are some values
             if (value.value.length === 0) return;
@@ -726,7 +749,7 @@ function showGraph(startTime,seriesData) {
 
   //clear out graphContainer
   //$('#graphContainer').html('');
-  //$('#heatmapContainer').html('');
+
 
   //if there is some data, show the div
   $('#graphModal').modal('show');
@@ -777,6 +800,8 @@ function showGraph(startTime,seriesData) {
 
   //loop over series data so we can match up the axis and series indexes
   $(seriesData).each(function (i, obj) {
+
+    //console.log('series', i, obj)
     var yaxis =   {
       title: { 
         text: obj.unit,
@@ -795,8 +820,11 @@ function showGraph(startTime,seriesData) {
 
     var exists = false;
     $(chartSetup.yAxis).each(function (i, data) { 
+      console.log('unit compare', data.title.text, obj.unit)
       if (data.title.text == obj.unit) exists = true;
     });
+
+    console.log('yaxis exists:', exists,obj.unit )
 
     if (!exists) { 
       obj.yAxis = i;
@@ -805,7 +833,8 @@ function showGraph(startTime,seriesData) {
 
     // obj.yAxis = i;
     // chartSetup.yAxis.push(yaxis);
-    //console.log('here',obj)
+
+    console.log('here',obj)
     
     chartSetup.series.push(obj);
     
