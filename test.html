@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="author" content="Martyn Smith - USGS NY WSC">
+	<link rel="copyright" href="license.txt">
+    <title>NGWOS Data Portal</title>
+    <meta http-equiv="content-type" content="text/html; utf-8"/>
+    <meta charset="utf-8">
+
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" ></script>
+    <script src="https://code.highcharts.com/highcharts.js" ></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+
+    <style>
+        .select2-container {
+            width: 300px !important;
+        }
+        .select2-selection__choice {
+            font-size:12px;
+        }
+        
+        .select2-search__field {
+            width: auto !important; 
+        }
+        
+        #graphContainer {
+            margin-left: 100px;
+            margin-right: 100px;
+        }
+
+    </style>
+
+  </head>
+  <body>
+    
+    <div id="graphDiv">
+        <div class="card">
+                <div class="card-body">
+
+                    <h5 class="card-title">Select Station(s)</h5>
+                    <select class="appFilter" id="stationSelect" data-selectname="Select Station" multiple></select>
+
+                    <h5 class="card-title mt-4">Select Sublocation(s)</h5>
+                    <select class="appFilter" id="sublocationSelect" data-selectname="Select Sublocation" multiple></select>
+
+                    <h5 class="card-title mt-4">Select Parameter(s)</h5>
+                    <select class="appFilter" id="parameterSelect" data-selectname="Select Parameter" multiple></select>
+
+                    <h5 class="card-title mt-4">Select Time Period</h5>
+
+                    <div class="mt-2">
+                        <div class="mb-2 form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="timeSelect" id="timePeriodRadio" value="period" checked>
+                                Choose Time Period
+                            </label>
+                        </div>
+                            
+                        <select class="" id="timePeriodSelect" data-selectname="SelectDatePeriod">
+                            <option value="P1D">Past 1 Day</option>
+                            <option value="P7D" selected="selected">Past 7 Days</option>
+                            <option value="P30D">Past 30 Days</option>
+                            <option value="P2M">Past 2 Months</option>
+                            <option value="P6M">Past 6 Months</option>
+                        </select>
+
+                    </div>
+
+                    <div class="mt-2">OR</div>
+
+                    <div class="mt-2">
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="timeSelect" id="specificRadio" value="range" checked>
+                                Choose Specific Date Range
+                            </label>
+                        </div>
+                            
+
+                        <input id="startDate" type="text" value="2020-04-27" class="datepicker">
+                        <span>Start Date</span>
+
+
+                        <input id="endDate" type="text" value="2020-05-04" class="mt-1 datepicker">
+                        <span>End Date</span>
+
+                    </div>
+    
+                </div>
+                <div class="card-footer text-center">
+                    <button id="showGraph" type="button" class="btn btn-success">Show Graph</button>
+                </div>
+
+        </div> 
+            
+        <div class="row" id="graph-loading" style="display:none;">
+            <div class="col-6 mx-auto">
+                <div class="text-center">
+                    <i class="fa fa-cog fa-spin fa-3x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="graphContainer">
+        </div>
+
+    </div>
+
+    <script>
+
+        var NWISivURL = 'https://nwis.waterservices.usgs.gov/nwis/iv/';
+        var siteID = '01434498';
+        var stationName = 'Profiler1';
+        var pcode = '00010';
+        var pcode_name = 'Temperature, water, degrees Celsius';
+
+        //listeners
+        $('#showGraph').click(function () {
+            getData();
+        });
+
+        $('#timePeriodSelect').select2({
+            dropdownAutoWidth: true,
+            minimumResultsForSearch: -1
+        });
+
+        setDates();
+        initializeFilters();
+
+        function initializeFilters() {
+            //initialize dropdowns
+            $('#stationSelect').select2({
+                placeholder: 'Select Station',
+                data: [{ 
+                    "id": siteID,
+                    "text": siteID,
+                    "value": siteID
+                }]
+            });
+
+            $('#stationSelect').val(siteID); // Select the option with a value of '1'
+            $('#stationSelect').trigger('change'); // Notify any JS components that the value changed
+
+            $('#sublocationSelect').select2({
+                placeholder: 'Select Station',
+                data: [{ 
+                    "id": siteID + ' | ' + stationName,
+                    "text": siteID + ' | ' + stationName,
+                    "value": siteID + ' | ' + stationName
+                }]
+            });
+
+            $('#sublocationSelect').val(siteID + ' | ' + stationName); // Select the option with a value of '1'
+            $('#sublocationSelect').trigger('change'); // Notify any JS components that the value changed
+
+            $('#parameterSelect').select2({
+                placeholder: 'Select Station',
+                data: [{ 
+                    "id": pcode,
+                    "text": pcode + ' | ' + pcode_name,
+                    "value": pcode
+                }]
+            });
+
+            $('#parameterSelect').val(pcode); // Select the option with a value of '1'
+            $('#parameterSelect').trigger('change'); // Notify any JS components that the value changed
+        }
+
+        function getData() {
+
+            console.log('In GetData()')
+
+            $('#graph-loading').show();
+            $('#graphContainer').html('');
+
+            var requestData = {
+                format: 'json',
+            };
+
+            //----------------------------------------------
+            //SHOW SELECTED SITES AS HIGHLIGHTED ON THE MAP
+            //----------------------------------------------
+
+            var siteData = $('#stationSelect').select2('data');
+            var sublocationData = $('#sublocationSelect').select2('data');
+            var siteParameter = $('#parameterSelect').select2('data');
+
+            //validate station and parameter selections
+            if (siteData.length === 0 || siteParameter.length === 0) {
+                alert('You must choose at least one station and one parameter to continue');
+                $('#graph-loading').hide();
+                return;
+            }
+
+            //time and date stuff
+            var timeOption = $('input[name=timeSelect]:checked').val();
+
+            //convert periods to start and end dates with moment
+            if (timeOption === 'period') {
+                var period = $('#timePeriodSelect').select2('data')[0].id;
+                requestData.endDT = moment().format('YYYY-MM-DD');
+                requestData.startDT = moment().subtract(moment.duration(period)).format('YYYY-MM-DD'); 
+            }
+            else {
+                requestData.startDT = $('#startDate').val();
+                requestData.endDT = $('#endDate').val();
+            }
+
+            //format selections
+            var siteIDs = siteData.map(function(item) {
+                return item.value;
+            }).join(',');
+            requestData.sites = siteIDs;
+
+            var parameterCodeList = siteParameter.map(function(item) {
+                return item.value;
+            });
+
+            console.log('selected params:',parameterCodeList  )
+
+            var sublocationList = sublocationData.map(function(item) {
+                return item.text;
+            });
+
+            //seperate pcode list into NWIS params and local params
+            var nwisList = [];
+            $(parameterCodeList).each(function(idx, li) {
+                nwisList.push(li);
+            });
+
+            nwisList = nwisList.join(',');
+            requestData.parameterCd = nwisList;
+            console.log('paramcodes:',nwisList);
+
+            seriesData = [];
+            var qualifierFound = false;
+            var startTime;
+
+            console.log('input Request:',NWISivURL, requestData);
+
+            $.ajax({
+            url: NWISivURL, 
+            dataType: 'json',
+            data:  requestData, 
+            type: 'GET',
+            success: function(data) {
+
+                console.log('response', data);
+
+                if (data.value.hasOwnProperty('timeSeries') && data.value.timeSeries.length === 0) {
+                alert('Found an NWIS site [' + siteIDs + '] but it had no data in waterservices for [' + nwisList + ']');
+                $('#graph-loading').hide();
+                return;
+                }
+                
+                else if (data.value.length === 0) {
+                alert('Found a site [' + siteIDs + '] but it is missing local DB data for [' +  localList + ']');
+                $('#graph-loading').hide();
+                return;
+                }
+
+                startTime = data.value.queryInfo.criteria.timeParam.beginDateTime;  
+
+                console.log('SUBLOC LIST', sublocationList)
+
+
+                $(data.value.timeSeries).each(function (i, siteParamCombo) {
+
+                var site_name = siteParamCombo.sourceInfo.siteName;
+
+                $(siteParamCombo.values).each(function (i, value) {
+
+                    //check here to 
+                    var method_description = value.method[0].methodDescription;
+
+                    //console.log('method desc:',method_description)
+                    
+                    var found = false;
+                    $(sublocationList).each(function (i, subloc) {
+                    var location = subloc.split(' | ')[1];
+
+                    //check for met station
+                    if (location === 'Met Station') {
+                        found = true
+                    }
+
+                    //check for sublocation match 
+                    if (method_description.length > 0 && method_description.indexOf(location) !== -1) {
+                        //console.log('BANGO', method_description,location)
+                        found = true
+                    }
+
+                    //check for main site match
+                    if (method_description.length === 0 && location === site_name) {
+                        found = true
+                    }
+
+                    //if (!found) console.log('SKIPPING THIS PARAM', location, method_description)
+                    });
+
+                    if (found) {
+
+                    //console.log('FOUND A MATCH', method_description, value.value.length )
+
+                    //check to make sure there are some values
+                    if (value.value.length === 0) return;
+
+                    //console.log('single timeseries:', value);
+
+                    var valueArray = value.value.map(function(item) {
+                        var seconds = new Date(item.dateTime)/1;
+
+                        var itemValue = item.value/1;
+
+                        //null out the values if there is a maintenance flag
+                        if (item.qualifiers.indexOf('Mnt') !== -1 || item.qualifiers.indexOf('Eqp') !== -1) {
+                        itemValue = null;
+                        qualifierFound = true;
+                        }
+
+                        return [seconds,itemValue];
+                    });
+
+                    var name;
+                    if (value.method[0].methodDescription.length > 0) name = siteParamCombo.sourceInfo.siteName + ' | ' + $('<div>').html(siteParamCombo.variable.variableName).text() + ' | ' + value.method[0].methodDescription;
+                    else name = siteParamCombo.sourceInfo.siteName + ' | ' + $('<div>').html(siteParamCombo.variable.variableName).text();
+                
+                    var series = {
+                        showInLegend: true,
+                        values: value,
+                        data: valueArray,
+                        color: getRandomColor(),
+                        siteID: siteParamCombo.sourceInfo.siteCode[0].value,
+                        siteName: siteParamCombo.sourceInfo.siteName,
+                        siteCode: siteParamCombo.name,
+                        variableDescription: siteParamCombo.variable.variableDescription,
+                        variableName: siteParamCombo.variable.variableName,
+                        unit: siteParamCombo.variable.unit.unitCode,
+                        name:name,
+                    };
+                
+                    seriesData.push(series);
+                    }
+
+                });
+                });
+
+                //check if were done
+                if (seriesData.length > 0) {
+                showGraph(startTime,seriesData);
+                }
+                else {
+                alert('No data was found for this query')
+                }
+
+
+            }
+            });
+        }
+
+        
+        function setDates() {
+
+            //set datepicker options
+            $('.datepicker').datepicker({
+                format: 'yyyy-mm-dd'
+            });
+
+            var dateObj = new Date();
+            var currentDate = formatDate(dateObj);
+            var lastWeekDate = formatDate(dateObj.getTime() - (7 * 24 * 60 * 60 * 1000));
+            console.log('dates:',currentDate,lastWeekDate);
+
+            $('#startDate').val(lastWeekDate);
+            $('#endDate').val(currentDate);
+
+        }
+
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function showGraph(startTime,seriesData) {
+            console.log('showGraph seriesData',startTime,seriesData);
+
+            //clear out graphContainer
+            //$('#graphContainer').html('');
+
+
+            //if there is some data, show the div
+            $('#graphModal').modal('show');
+
+                Highcharts.setOptions({
+                    global: { useUTC: false },
+                    lang: { thousandsSep: ','}
+            });
+            
+            //chart init object
+            var chartSetup = {
+                    chart: {
+                        type: 'line',
+                        spacingTop: 20,
+                        spacingLeft: 0,
+                        spacingBottom: 0,
+                },
+                plotOptions: {
+                series: {
+                    pointStart: startTime,
+                    pointInterval: 900000 //15 minutes
+                }
+                },
+                    title:{
+                        text:''
+                    },
+                    credits: {
+                        enabled: false
+                },
+                tooltip: {
+                shared: true
+                },
+                    xAxis: {
+                        type: "datetime",
+                        labels: {
+                            formatter: function () {
+                                return Highcharts.dateFormat('%m/%d %H%P', this.value);
+                            },
+                            //rotation: 90,
+                            align: 'center',
+                            tickInterval: 172800 * 1000
+                        }
+                },
+                    yAxis: [],
+                    series: []
+            };
+
+
+            //loop over series data so we can match up the axis and series indexes
+            $(seriesData).each(function (i, obj) {
+
+                //console.log('series', i, obj)
+                var yaxis =   {
+                title: { 
+                    text: obj.unit,
+                    style: {
+                    color: obj.color
+                    }
+                },
+                labels: {
+                    style: {
+                        color: obj.color
+                    }
+                },
+                //put odd items on opposite axis
+                opposite: isOdd(i)
+                };
+
+                var exists = false;
+                $(chartSetup.yAxis).each(function (i, data) { 
+                console.log('unit compare', data.title.text, obj.unit)
+                if (data.title.text == obj.unit) exists = true;
+                });
+
+                console.log('yaxis exists:', exists,obj.unit )
+
+                if (!exists) { 
+                obj.yAxis = i;
+                chartSetup.yAxis.push(yaxis);
+                }
+
+                // obj.yAxis = i;
+                // chartSetup.yAxis.push(yaxis);
+
+                console.log('here',obj)
+                
+                chartSetup.series.push(obj);
+                
+            });
+
+                var chart = Highcharts.chart('graphContainer', chartSetup);
+            
+            // update colors
+            // https://www.highcharts.com/demo/combo-multi-axes
+            // https://stackoverflow.com/questions/12419758/changing-series-color-in-highcharts-dynamically
+            // https://stackoverflow.com/questions/17837340/highcharts-dynamically-change-axis-title-color
+
+            $('#graph-loading').hide();
+
+        }
+
+        function isOdd(n) {
+            return !!(n % 2);
+        }
+
+
+    
+    </script>
+  </body>
+</html>
