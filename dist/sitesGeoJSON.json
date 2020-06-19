@@ -10,9 +10,37 @@
       "properties": {
         "Station Name":"PLATTE KILL AT DUNRAVEN NY",
         "Site ID":"01414000",
-        "photoURL": "https://ny.water.usgs.gov/images/StationPictures/01414000.jpg"
+        "photoURL": "https://ny.water.usgs.gov/images/StationPictures/01414000.jpg",
+        "thermalURL": "./images/01414000_20190928_162929_R.jpg"
       }
     },
+
+    {
+      "type": "Feature",
+      "geometry": {
+          "type": "Point",
+          "coordinates":  [ -74.69750000, 41.37055556 ]
+      },
+      "properties": {
+        "Station Name":"DELAWARE RIVER AT PORT JERVIS NY",
+        "Site ID":"01434000",
+        "photoURL": "https://ny.water.usgs.gov/images/StationPictures/01434000.jpg",
+        "thermalURL": "https://cida.usgs.gov/stormsummary/timelapse/BasicData/NYWSC/NY/NY_DelawareR_PortJervis_PTZ_timelapse_videos/idx323_last_frame_in_current_timelapse.jpg"
+      }
+    },
+
+    {
+      "type": "Feature",
+      "geometry": {
+          "type": "Point",
+          "coordinates":  [ -74.69753, 41.37123 ]
+      },
+      "properties": {
+        "Station Name":"RQ-30",
+        "Site ID":"01434000"
+      }
+    },
+
     {
       "type": "Feature",
       "geometry": {
@@ -114,7 +142,7 @@
           "coordinates":  [ -74.574697, 41.920908	]
       },
       "properties": {
-        "Station Name": "VWC.Pit1",
+        "Station Name": "Pit1",
         "Site ID": "01434498"
       }
     },
@@ -126,7 +154,7 @@
           "coordinates":  [ -74.574711, 41.920925 ]
       },
       "properties": {
-        "Station Name": "VWC.Pit2",
+        "Station Name": "Pit2",
         "Site ID": "01434498"
       }
     },
@@ -140,7 +168,8 @@
       "properties": {
         "Station Name":"NEVERSINK RIVER NEAR CLARYVILLE NY",
         "Site ID":"01435000",
-        "photoURL": "https://ny.water.usgs.gov/images/StationPictures/01435000.jpg"
+        "photoURL": "https://ny.water.usgs.gov/images/StationPictures/01435000.jpg",
+        "thermalURL": "./images/01435000_20190825_175919_R.jpg"
       }
     },
 
@@ -188,7 +217,7 @@
           "coordinates":  [ -74.58979722, 41.88993889	]
       },
       "properties": {
-        "Station Name": "VWC.Pit1",
+        "Station Name": "Pit1",
         "Site ID": "01435000"
       }
     },
@@ -200,8 +229,32 @@
           "coordinates":  [ -74.58978611, 41.88995	]
       },
       "properties": {
-        "Station Name": "VWC.Pit2",
+        "Station Name": "Pit2",
         "Site ID": "01435000"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+          "type": "Point",
+          "coordinates":  [ -74.51694440, 41.97916667 ]
+      },
+      "properties": {
+        "Station Name":"EVAPOTRANSPIRATION AT FROST VALLEY NR CLARYVILLE",
+        "Site ID":"415845074310101",
+        "photoURL": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+          "type": "Point",
+          "coordinates":  [ -74.50322220, 41.99360000 ]
+      },
+      "properties": {
+        "Station Name":"BISCUIT BROOK (NY68) NADP STATION AT FROST VALLEY",
+        "Site ID":"415937074301201",
+        "photoURL": ""
       }
     }
   ]

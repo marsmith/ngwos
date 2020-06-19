@@ -70,12 +70,11 @@ var theMap;
 var featureCollection;
 var baseMapLayer, basemaplayerLabels;
 var ngwosSitesLayer;
-var weatherLayer = {};
+var overlayLayer = {};
 var seriesData;
 var siteIDlist = [];
 var parameterList = [];
-var ajaxQueue = $({});
-var metPcodes = ['00020', '75969', '00052', '72252', '00036', '62625', '72269', '00045'];
+//var metPcodes = ['00020', '75969', '00052', '72252', '00036', '62625', '72269', '00045'];
 //END global variables
 
 //instantiate map
@@ -88,29 +87,6 @@ $(document).ready(function () {
   initListeners();
   loadSites();
   setDates();
-
-  //init ajax queue function
-  $.ajaxQueue = function(ajaxOpts) {
-    // Hold the original complete function
-    var oldComplete = ajaxOpts.complete;
-  
-    // Queue our ajax request
-    ajaxQueue.queue(function(next) {
-      // Create a complete callback to invoke the next event in the queue
-      ajaxOpts.complete = function() {
-        // Invoke the original complete if it was there
-        if (oldComplete) {
-          oldComplete.apply(this, arguments);
-        }
-  
-        // Run the next query in the queue
-        next();
-      };
-  
-      // Run the query
-      $.ajax(ajaxOpts);
-    });
-  };
 
 });
 
@@ -125,29 +101,18 @@ function initializeMap() {
   control.scale().addTo(theMap);
 
   //basemap
-  baseMapLayer = basemapLayer('ImageryClarity').addTo(theMap);;
+  baseMapLayer = basemapLayer('Streets').addTo(theMap);
 
-  //init weather layers
-  weatherLayer.NexRad = tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png', {opacity : 0.5 });
-  weatherLayer.Precip = tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-n1p-900913/{z}/{x}/{y}.png', {opacity : 0.5 });
-  weatherLayer.PrecipForecast1hr = dynamicMapLayer({url: 'https://idpgis.ncep.noaa.gov/arcgis/rest/services/NWS_Forecasts_Guidance_Warnings/wpc_qpf/MapServer', layers: [7], opacity : 0.5, disableCache: true });
-  weatherLayer.CloudCoverVisible = tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes-vis-1km-900913/{z}/{x}/{y}.png', {opacity : 0.5 });
-  weatherLayer.Drought = tileLayer.wms('http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map', {layers : 'usdm_current', bboxSR: 102100, imageSR: 102100, format: 'image/png', transparent: true, f: 'image', nocache: Date.now(), opacity : 0.5});
-
-  // Create map
-  // var layer = L.leafletGeotiff(
-  //   url='./data/WB_2019_ortho1_4326.tif',
-  //   options={band: 0,
-  //     displayMin: 0,
-  //     displayMax: 360,
-  //     name: 'Wind direction',
-  //     //colorScale: 'rainbow',
-  //     //clampLow: false,
-  //     //clampHigh: true,
-  //     vector:true,
-  //     arrowSize: 20,
-  //   }
-  // ).addTo(theMap);
+  //init overlay layers
+  overlayLayer.Ortho01435000 = L.tileLayer.wms('https://www.sciencebase.gov/catalogMaps/mapping/ows/5eb96d0482ce25b5135d25bb?', { layers: 'sb:01435000_2019_visible_light_ortho', transparent: true, format: 'image/png', maxZoom: 28 });
+  overlayLayer.Thermal01435000 = L.tileLayer.wms('https://www.sciencebase.gov/catalogMaps/mapping/ows/5eb96d0482ce25b5135d25bb?', { layers: 'sb:01435000_2019_thermal_ortho_abs_temp', transparent: true, format: 'image/png', maxZoom: 28 });
+  overlayLayer.Ortho01434498 = L.tileLayer.wms('https://www.sciencebase.gov/catalogMaps/mapping/ows/5eb96d0482ce25b5135d25bb?', { layers: 'sb:01434498_2019_visible_light_ortho', transparent: true, format: 'image/png', maxZoom: 28 });
+  overlayLayer.Thermal01434498 = L.tileLayer.wms('https://www.sciencebase.gov/catalogMaps/mapping/ows/5eb96d0482ce25b5135d25bb?', { layers: 'sb:01434498_2019_thermal_ortho_abs_temp', transparent: true, format: 'image/png', maxZoom: 28 });
+  overlayLayer.NexRad = tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png', { opacity : 0.5 });
+  overlayLayer.Precip = tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/q2-n1p-900913/{z}/{x}/{y}.png', { opacity : 0.5 });
+  overlayLayer.PrecipForecast1hr = dynamicMapLayer({ url: 'https://idpgis.ncep.noaa.gov/arcgis/rest/services/NWS_Forecasts_Guidance_Warnings/wpc_qpf/MapServer', layers: [7], opacity : 0.5, disableCache: true });
+  overlayLayer.CloudCoverVisible = tileLayer('https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes-vis-1km-900913/{z}/{x}/{y}.png', { opacity : 0.5 });
+  overlayLayer.Drought = tileLayer.wms('http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map', { layers : 'usdm_current', bboxSR: 102100, imageSR: 102100, format: 'image/png', transparent: true, f: 'image', nocache: Date.now(), opacity : 0.5 });
 
   //set initial view
   theMap.setView([MapY, MapX], MapZoom);
@@ -190,32 +155,51 @@ function initListeners() {
     downloadData();
   });
 
-  $('.weatherBtn').click(function () {
+  $('.overlayBtn').click(function () {
     $(this).toggleClass('slick-btn-selection');
     var lyrID = this.id.replace('btn', '');
-    setWeatherLayer(lyrID);
+    setOverlayLayer(lyrID);
   });
 
   $('#mapDiv').on("click", '.openGraphingModule', function(){
-    var id = String($(this).data('id'));
-    $('#stationSelect').select2('val', id);
+    console.log('this',this)
+    var siteID = String($(this).data('siteid'));
+    var siteName = String($(this).data('sitename'));
+    var subLocation = siteID + ' | ' + siteName;
+
+    $('#stationSelect').val(siteID).trigger("change");
+    $('#sublocationSelect').val(subLocation).trigger("change");
+
+    filterSublocations([siteID]);
+
     openGraphingModule();
   });  
 
-  $('#legend').on("mouseenter", ".site", function(){
+  $('#legend').on("click", ".site", function(){
 
     var siteName = $(this).data('sitename');
-    var siteID = $(this).data('siteid');
+    var siteID = String($(this).data('siteid'));
 
     ngwosSitesLayer.eachLayer(function(geoJSON){
       geoJSON.eachLayer(function(layer) { 
+
+        ///console.log(siteName,layer.feature.properties['Station Name'],siteID,layer.feature.properties['Site ID'])
         
         //console.log(siteName,layer.feature.properties['Station Name'])
         if (siteName === layer.feature.properties['Station Name'] && siteID === layer.feature.properties['Site ID']) {
-          //center map on new popup
-          theMap.flyTo([layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]], 18);
 
-          // , {animate	: true, duration: 2}
+            // //center and zoom map on new popup
+            // theMap.flyTo([layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]], 18);
+
+            if (theMap.getZoom() > 14) {
+              //center map on new popup
+              theMap.panTo([layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]]);
+            }
+
+            else {
+              theMap.flyTo([layer.feature.geometry.coordinates[1], layer.feature.geometry.coordinates[0]], 18);
+            }
+
 
           //open popup
           layer.openPopup();
@@ -234,7 +218,7 @@ function initListeners() {
 
     var siteName = $(this).parent().parent().data('sitename');
     var siteID = $(this).parent().parent().data('siteid');
-    var id = String($(this).parent().parent().data('id'));
+    var subLocation = siteID + ' | ' + siteName;
 
     console.log('Badge clicked for site name:',$(this).parent().parent().data('sitename'))
 
@@ -244,6 +228,8 @@ function initListeners() {
 
           //select station based on where click was in legend
           $('#stationSelect').val(siteID).trigger("change");
+
+          $('#sublocationSelect').val(subLocation).trigger("change");
 
           //hide all substations that dont apply to this station
           filterSublocations([siteID]);
@@ -280,7 +266,6 @@ function initListeners() {
           console.log('Found paramater match:',siteID, pcode_tsid);
 
           $("#sublocationSelect").val(siteID+ ' | ' + siteName).trigger("change");
-
           $("#parameterSelect").val(item.pcode).trigger("change");
 
           getData();
@@ -306,6 +291,8 @@ function initListeners() {
 
   //filter sublocations on any change 
   $('#sublocationSelect').on('change', function (e) {
+
+    console.log('sublocationselect has changed')
 
     var obj = $("#sublocationSelect").select2("data");
     var sublocationList =  obj.map(subloc => subloc.text);
@@ -346,7 +333,7 @@ function initListeners() {
 
   ngwosSitesLayer.on("popupopen", function(e){
     //make sure map pans for loaded images
-    $(".leaflet-popup-content img").one("load", function(){ e.popup.update(); });
+    $(".leaflet-popup-content img").on("load", function(){ e.popup.update(); });
   });
 
   /*  END EVENT HANDLERS */
@@ -391,7 +378,7 @@ function filterParameterList(sublocationList) {
       });
     });
 
-    console.log('pcode list:', pcodeList);
+    //console.log('pcode list:', pcodeList);
 
 
     $("#parameterSelect option").each(function() {
@@ -406,6 +393,9 @@ function filterParameterList(sublocationList) {
   
         //console.log('hiding sublocation:' , optionVal);
         $(this).prop('disabled', 'disabled');
+
+        //automatically select the parameters if we are not at a main site or met station
+        //DO SOME WORK HERE
   
         $('#parameterSelect').trigger('change');
       }
@@ -551,6 +541,7 @@ function getData() {
   var requestDatas = [];
   var requestData = {
     format: 'json',
+    access: '2'
   };
 
   //----------------------------------------------
@@ -656,6 +647,8 @@ function getData() {
           $(sublocationList).each(function (i, subloc) {
             var location = subloc.split(' | ')[1];
 
+            //console.log('HERE',  location, '//', site_name, '//', method_description)
+
             //check for met station
             if (location === 'Met Station') {
               found = true
@@ -667,8 +660,15 @@ function getData() {
               found = true
             }
 
+            //console.log('TEST', method_description.length, location, site_name)
+
             //check for main site match
             if (method_description.length === 0 && location === site_name) {
+              found = true
+            }
+
+            //special case 
+            if (location === 'BISCUIT BROOK (NY68) NADP STATION AT FROST VALLEY') {
               found = true
             }
 
@@ -1005,6 +1005,7 @@ function loadSites() {
       $.getJSON(NWISivURL, {
           format: 'json',
           sites: siteIDlist.join(','),
+          access: '2',
           //parameterCd: parameterCodes
         }, function success(data) {
             console.log('NWIS IV Data:',data);
@@ -1015,7 +1016,7 @@ function loadSites() {
               var site_data = NWISdata.name.split(':');
               var site_name = NWISdata.sourceInfo.siteName;
               var site_desc = NWISdata.variable.variableDescription;
-              var siteID = site_data[1];
+              var siteID = String(site_data[1]);
               var pcode = site_data[2];
               var pcode_tsid = '';
 
@@ -1050,66 +1051,29 @@ function loadSites() {
                   name = NWISdata.variable.variableName;
                 }
 
-                //check for met data because there is a seperate station at "01434498"
-                if (siteID === "01434498" && metPcodes.includes(pcode)) {
-                  //console.log('FOUND A MET PCODE:', pcode);
-                  site_name = 'Met Station';
-                }
+                //check for square bracket to identify subLocation
+                //SUBLOCATIONS ARE INDEXED BY SITE NAME IN SEPERATE FEATURES/LATLONGS IN SITESGEOJSON.JSON
+                if (description.indexOf('[') !== -1 && description.indexOf(']') !== -1) {
 
-                //check for square bracket to identify sub-site
-                if (description.indexOf('[') !== -1) {
-
-                  //make name swap for sorting
-                  if (description.indexOf('Depth0cm') !== -1) {
-
-                    description = description.replace('Depth0cm','Depth00cm');
-                    name = name.replace('Depth0cm','Depth00cm');
-                  }
-
-                  //make name swap for sorting
-                  if (description.indexOf('Depth2cm') !== -1) {
-
-                    description = description.replace('Depth2cm','Depth02cm');
-                    name = name.replace('Depth2cm','Depth02cm');
-                  }
-
-                  if (description.indexOf('Depth5cm') !== -1) {
-
-                    description = description.replace('Depth5cm','Depth05cm');
-                    name = name.replace('Depth5cm','Depth05cm');
-                  }
-
-                  if (description.indexOf('Depth8cm') !== -1) {
-
-                    description = description.replace('Depth8cm','Depth08cm');
-                    name = name.replace('Depth8cm','Depth08cm');
-                  }
-                  
-
+                  //get text between brackets
                   var bracketString = description.split('[')[1].split(']')[0];
-    
-                  //additional check for VWC
-                  if (bracketString.indexOf('VWC') !== -1) {
-                    site_name = bracketString.split('.')[0] + '.' + bracketString.split('.')[1];
+
+                  //use '.' to split location into its parts
+                  var bracketStringList = bracketString.split('.');
+                  
+                  //if there is only one descriptor inside brackets, use that as the name
+                  if (bracketStringList.length === 1) {
+                    site_name = bracketString
                   }
 
-                  else if (bracketString.indexOf('Side Channel') !== -1) {
-                    site_name = 'Side Channel';
-                  }
-
-                  else if (bracketString.indexOf('Piezometer2') !== -1) {
-                    site_name = 'Piezometer2';
-                  }
-
-                  else if (bracketString.indexOf('Piezometer3') !== -1) {
-                    site_name = 'Piezometer3';
+                  //if there are two descriptors, use the first one in the list
+                  else if (bracketStringList.length > 1) {
+                    site_name = bracketStringList[0];
                   }
 
                   else {
-                    site_name = bracketString.split('.')[0]
+                    console.log('Something weird with bracketString:', bracketString)
                   }
-
-                  //console.log('FOUND A SUBSITE for ' + siteID + ':' + bracketString + '|' + subSiteID);
                 }
 
                 //match data to geoJSON features
@@ -1122,11 +1086,6 @@ function loadSites() {
                   if (siteID === feature.properties['Site ID']) {
 
                     if (site_name === feature.properties["Station Name"]) {
-
-                      //check if this is a gage house and rename if so
-                      // if (feature.properties["photoURL"]) {
-                      //   feature.properties["Station Name"] = 'Gage House';
-                      // }
 
                       if (!(pcode_tsid in feature.properties) ) {
                         feature.properties[pcode_tsid] = {};
@@ -1143,6 +1102,31 @@ function loadSites() {
                         feature.properties[pcode_tsid].description = description;
                         feature.properties[pcode_tsid].name = name;
                       }
+                    }
+
+                    //we have a sublocation, but no matching sublocation in the geojson.  add to main site
+                    if (siteID === '415937074301201') {
+
+                      //console.log('potential sublocation not in geojson, adding it:', pcode_tsid, site_name, siteID)
+
+                      if (!(pcode_tsid in feature.properties) ) {
+                        feature.properties[pcode_tsid] = {};
+                        feature.properties[pcode_tsid].value = TSID.value[0].value;
+                        
+                        //null out the values if there is a maintenance flag
+                        if (TSID.value[0].qualifiers.indexOf('Mnt') !== -1 || TSID.value[0].qualifiers.indexOf('Eqp') !== -1 || TSID.value[0].qualifiers.indexOf('Ssn') !== -1) {
+                          feature.properties[pcode_tsid].value = null;
+                        }
+
+                        feature.properties.dateTime = TSID.value[0].dateTime;
+                        feature.properties[pcode_tsid].dateTime = TSID.value[0].dateTime;
+                        feature.properties[pcode_tsid].qualifiers = TSID.value[0].qualifiers;
+                        feature.properties[pcode_tsid].description = description;
+                        feature.properties[pcode_tsid].name = name;
+
+                      }
+
+
                     }
                   }
 
@@ -1177,6 +1161,10 @@ function loadSites() {
                   popupContent += '<br><a href="' + feature.properties['photoURL'] + '" target="_blank"><img style="width:100%" src=' + feature.properties['photoURL'] + ' alt="Site Photo"></a>';
                 }
 
+                if (feature.properties['thermalURL'] && feature.properties['thermalURL'].length > 0) {
+                  popupContent += '<br><b>Image: </b><br><a href="' + feature.properties['thermalURL'] + '" target="_blank"><img style="width:100%" src=' + feature.properties['thermalURL'] + ' alt="Image"></a>';
+                }
+
                 popupContent += '<br><h5><span class="openGraphingModule ml-2 badge badge-success" data-sitename="' + feature.properties['Station Name'] +'" data-id="' + feature.properties['id'] + '" data-siteid="' + feature.properties['Site ID'] + '" >Get Data</span></h5>';
 
                 layer.bindPopup(popupContent);
@@ -1201,12 +1189,11 @@ function loadSites() {
 function setBasemap(baseMap) {
 
   switch (baseMap) {
-    case 'Sentinel': baseMap = 'Sentinel'; break;
     case 'Streets': baseMap = 'Streets'; break;
-    case 'Satellite': baseMap = 'Imagery'; break;
+    case 'Imagery': baseMap = 'Imagery'; break;
     case 'Clarity': baseMap = 'ImageryClarity'; break;
+    case 'Firefly': baseMap = 'ImageryFirefly'; break;
     case 'Topo': baseMap = 'Topographic'; break;
-    case 'Terrain': baseMap = 'Terrain'; break;
     case 'Gray': baseMap = 'Gray'; break;
     case 'DarkGray': baseMap = 'DarkGray'; break;
     case 'NatGeo': baseMap = 'NationalGeographic'; break;
@@ -1222,13 +1209,16 @@ function setBasemap(baseMap) {
   }
 }
 
-function setWeatherLayer(layer) {
+function setOverlayLayer(layer) {
 
-  var layerName = weatherLayer[layer];
+  var layerName = overlayLayer[layer];
   
   //first check if weve added this already
   if(theMap.hasLayer(layerName)) theMap.removeLayer(layerName)
-  else theMap.addLayer(layerName);
+  else {
+    theMap.addLayer(layerName);
+    layerName.bringToFront();
+  }
 }
 
 function isOdd(n) {

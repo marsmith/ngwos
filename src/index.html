@@ -75,12 +75,18 @@
                             </div>
                             <div id="layersPanel" class="card-body collapse" data-parent="#accordion">
                                 <!-- <button id="btnStreamSites" class="btn btn-default slick-btn equalize"><img class="basemapThumb" alt=""><br class="basemapThumb">Stream Gage Sites</button> -->
+                                
+                                <button id="btnOrtho01434498" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/ortho.jpg"><br class="basemapThumb">UAS Orthophoto Mosaic (01434498| 2019-10-10)</button>
+                                <button id="btnThermal01434498" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/thermal.jpg"><br class="basemapThumb">UAS Thermal Infrared Mosaic (01434498 | 2019-10-10)</button>
 
-                                <button id="btnNexRad" class="btn btn-default slick-btn weatherBtn equalize"><img class="basemapThumb" alt="" src="images/mesonet_nexrad.png"><br class="basemapThumb">Radar</button>
-                                <button id="btnPrecip" class="btn btn-default slick-btn weatherBtn equalize" ><img class="basemapThumb" alt="" src="images/mesonet_precip1hr.png"><br class="basemapThumb">Total Precipitation (Past Hour)</button>
-                                <button id="btnPrecipForecast1hr" class="btn btn-default slick-btn weatherBtn equalize" ><img class="basemapThumb" alt="" src="images/qpf-qpf006hr.png"><br class="basemapThumb">Precipitation Forecast (Next 6 hours)</button>
-                                <button id="btnCloudCoverVisible" class="btn btn-default slick-btn weatherBtn equalize"><img class="basemapThumb" alt="" src="images/mesonet_visible.png"><br class="basemapThumb">Cloud Cover (Visible)</button>
-                                <button id="btnDrought" class="btn btn-default slick-btn weatherBtn equalize"><img class="basemapThumb" alt="" src="images/drought-current.png"><br class="basemapThumb">Drought</button>
+                                <button id="btnOrtho01435000" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/ortho.jpg"><br class="basemapThumb">UAS Orthophoto Mosaic (01435000 | 2019-10-10)</button>
+                                <button id="btnThermal01435000" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/thermal.jpg"><br class="basemapThumb">UAS Thermal Infrared Mosaic (01435000 | 2019-10-10)</button>
+
+                                <button id="btnNexRad" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/mesonet_nexrad.png"><br class="basemapThumb">Radar</button>
+                                <button id="btnPrecip" class="btn btn-default slick-btn overlayBtn equalize" ><img class="basemapThumb" alt="" src="images/mesonet_precip1hr.png"><br class="basemapThumb">Total Precipitation (Past Hour)</button>
+                                <button id="btnPrecipForecast1hr" class="btn btn-default slick-btn overlayBtn equalize" ><img class="basemapThumb" alt="" src="images/qpf-qpf006hr.png"><br class="basemapThumb">Precipitation Forecast (Next 6 hours)</button>
+                                <button id="btnCloudCoverVisible" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/mesonet_visible.png"><br class="basemapThumb">Cloud Cover (Visible)</button>
+                                <button id="btnDrought" class="btn btn-default slick-btn overlayBtn equalize"><img class="basemapThumb" alt="" src="images/drought-current.png"><br class="basemapThumb">Drought</button>
                             </div>
 
                             <div class="card-header collapsed" data-toggle="collapse" data-parent="#accordion" href="#basemapsPanel">
@@ -90,14 +96,15 @@
                             </div>
 
                             <div id="basemapsPanel" class="card-body collapse" data-parent="#accordion">
-                                <button id="btnStreets" class="btn btn-default slick-btn basemapBtn equalize"><img class="basemapThumb" alt="" src="images/streets.jpg"><br class="basemapThumb">Streets</button>
+                                <button id="btnStreets" class="btn btn-default slick-btn basemapBtn equalize slick-btn-selection"><img class="basemapThumb" alt="" src="images/streets.jpg"><br class="basemapThumb">Streets</button>
                                 <button id="btnSatellite" class="btn btn-default slick-btn basemapBtn equalize" ><img class="basemapThumb" alt="" src="images/imagery.jpg"><br class="basemapThumb">Imagery</button>
-                                <button id="btnImageryClarity" class="btn btn-default slick-btn basemapBtn equalize slick-btn-selection" ><img class="basemapThumb" alt="" src="images/imagery_clarity.jpg"><br class="basemapThumb">Imagery Clarity</button>
+                                <button id="btnImageryClarity" class="btn btn-default slick-btn basemapBtn equalize" ><img class="basemapThumb" alt="" src="images/imagery_clarity.jpg"><br class="basemapThumb">Imagery Clarity</button>
+                                <button id="btnImageryFirefly" class="btn btn-default slick-btn basemapBtn equalize" ><img class="basemapThumb" alt="" src="images/imagery_clarity.jpg"><br class="basemapThumb">Imagery Firefly</button>
                                 <button id="btnTopo" class="btn btn-default slick-btn basemapBtn equalize"><img class="basemapThumb" alt="" src="images/topo.jpg"><br class="basemapThumb">Topo</button>
-                                <button id="btnTerrain" class="btn btn-default slick-btn basemapBtn equalize"><img class="basemapThumb" alt="" src="images/terrain.jpg"><br class="basemapThumb">Terrain</button>
                                 <button id="btnGray" class="btn btn-default slick-btn basemapBtn equalize " ><img class="basemapThumb" alt="" src="images/gray.jpg"><br class="basemapThumb">Gray</button>
                                 <button id="btnDarkGray" class="btn btn-default slick-btn basemapBtn equalize" ><img class="basemapThumb" alt="" src="images/darkgray.jpg"><br class="basemapThumb">DarkGray</button>
                                 <button id="btnNatGeo" class="btn btn-default slick-btn basemapBtn equalize"><img class="basemapThumb" alt="" src="images/natgeo.jpg"><br class="basemapThumb">NatGeo</button>
+                                
                             </div>
 
                         </div>
@@ -270,24 +277,31 @@
                         <div class="tab-content">
                             <div role="tabpanel" class="tab-pane active" id="aboutTabPane"><br>
 
+                                <p>The <a href="https://www.usgs.gov/mission-areas/water-resources/science/next-generation-water-observing-system-delaware-river">USGS Next Generation Water Observing System (NGWOS)</a> will provide quantitative information on streamflow, evapotranspiration, snowpack, soil moisture, a broad suite of water quality constituents (nutrients, salinity, turbidity, and wastewater indicators), connections between groundwater and surface water, and water use. It will be directly coupled with the National Water Model and other advanced modeling tools to provide state-of-the-art flood and drought forecasts, drive emergency- and water-management decision support systems, and to address difficult water resource questions (See FAQs below). </p>
+
+                                <h5>Delaware River Basin</h5>
+
+                                <p>The Delaware River is rich in history, ecologically diverse, and critical to the regional economy. Water managers in this region have a long history of applying innovative, regional solutions to insure the long-term sustainability of this treasured resource which provides drinking water to over 15 million people in the region. Piloting the NGWOS in the Delaware River Basin provides an opportunity to develop an integrated water observing system to support innovative modern water prediction and decision support systems in a nationally important, complex interstate river system. </p>
+
+                                <p>In 2018, the USGS began implementing NGWOS in the Delaware River Basin. By late 2019, about half of the monitoring infrastructure needed to test, validate, drive water forecasts, and inform water management decisions has been installed. Some recent highlights organized by fiscal year (Oct 1 – Sep 31) are shown below.</p>
+                                    
+                                    
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="disclaimerTabPane"><br>
                                 <div class="alert alert-info" role="alert">
                                     All data is provisional unless otherwise noted
                                 </div>
 
-                                <p>Need some text here</p>
-
-                                <p>Developed by <a href="https://www.usgs.gov/staff-profiles/martyn-smith">Martyn Smith</a> of the <a href="https://ny.water.usgs.gov">USGS New York Water Science Center</a>
-                                <p>Icons from <a href="https://github.com/USGS-WiM/marker-creator">Marker Creator</a> developed by<a href="https://wim.usgs.gov"> USGS Web Informatics and Mapping</a><br><br>
-                                <!-- Source code available <a href="https://github.com/marsmith/go2mapper">here.</a></p> -->
-                                <span id="appVersion"></span>
-                            </div>
-                            <div role="tabpanel" class="tab-pane" id="disclaimerTabPane"><br>
                                 <h4>USGS Software User Rights Notice</h4>
                                 <p>Software and related material (data and (or) documentation), contained in or furnished in connection with a software distribution, are made available by the U.S. Geological Survey (USGS) to be used in the public interest and in the advancement of science, subject to the following restrictions and understandings.</p>
                                   
                                 <p>Because the software and related material are free and provided "as is," the authors, the USGS, and the United States Government have made no warranty, express or implied, as to accuracy or completeness and are not obligated to provide the user with any support, consulting, training or assistance of any kind with regard to the use, operation, and performance of this software nor to provide the user with any updates, revisions, new versions or "bug fixes".</p>
                                   
                                 <p>The user assumes all risk for any damages whatsoever resulting from loss of use, data, or profits arising in connection with the access, use, quality, or performance of this software.</p>	
+
+                                <p>Developed by <a href="https://www.usgs.gov/staff-profiles/martyn-smith">Martyn Smith</a> of the <a href="https://ny.water.usgs.gov">USGS New York Water Science Center</a></br>
+                                Icons from <a href="https://github.com/USGS-WiM/marker-creator">Marker Creator</a> developed by<a href="https://wim.usgs.gov"> USGS Web</a></br>
+                                <span id="appVersion"></span></p>
                             </div>
                         </div>
                     </div>
