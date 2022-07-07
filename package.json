@@ -22,7 +22,7 @@
     "knockout": "^3.5.0",
     "leaflet": "^1.5.1",
     "leaflet-geotiff": "^0.2.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "popper.js": "^1.15.0",
     "select2": "^4.0.8"
   },
